@@ -4,37 +4,54 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
+
+	"github.com/with-go/standard/array"
 )
 
-type UserInfo struct {
-	Name     string
-	LastName string
-	Age      int
+type Todo struct {
+	id   int
+	name string
+	done bool
 }
 
 func main() {
-	callUserINfo()
-	sliceArray()
+	todoList := array.New()
 
 	reader := bufio.NewReader((os.Stdin))
-	fmt.Println("Enter your name:")
-	name, _ := reader.ReadString('\n')
-	fmt.Println(name)
-}
+	fmt.Println("Add todo...")
 
-func sliceArray() {
-	primes := [4]int{3, 4, 5, 6}
+	for {
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
 
-	var s []int = primes[0:2]
+		if input == "exit" {
+			fmt.Println("Bye....")
+			break
+		}
 
-	fmt.Println(s)
-}
+		todo := Todo{
+			id:   len(todoList) + 1,
+			name: input,
+			done: false,
+		}
 
-func callUserINfo() {
-	users := []UserInfo{{Name: "John", LastName: "Doe", Age: 30}, {Name: "Jane", LastName: "Smith", Age: 25}}
+		if input == "todos" {
+			fmt.Println(todoList)
+		} else if input == "complete" {
+			fmt.Println("Which task you want to complete")
+			for {
+				taskId, _ := reader.ReadString('\n')
+				taskId = strings.TrimSpace(taskId)
+				if taskId != "" {
 
-	for i := 0; i < len(users); i++ {
-		fmt.Println(users[i].Name)
+					break
+				}
+			}
+		} else {
+			todoList = todoList.Push(todo)
+
+		}
 	}
-	fmt.Println(("User Information:"))
+
 }
