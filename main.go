@@ -4,9 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
-
-	"github.com/with-go/standard/array"
 )
 
 type Todo struct {
@@ -15,43 +14,86 @@ type Todo struct {
 	done bool
 }
 
-func main() {
-	todoList := array.New()
+var todoList = []Todo{}
 
-	reader := bufio.NewReader((os.Stdin))
-	fmt.Println("Add todo...")
+func main() {
+	initTodo()
+}
+
+func findIndex(list []Todo, id int) int {
+	for i := range list {
+		fmt.Println(i)
+		if list[i].id == id {
+			return i
+		}
+	}
+	return -1
+}
+
+func initTodo() {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Add new todo")
 
 	for {
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
 
 		if input == "exit" {
-			fmt.Println("Bye....")
+			exitTerminal()
 			break
 		}
 
-		todo := Todo{
-			id:   len(todoList) + 1,
-			name: input,
-			done: false,
+		if input == "complete" {
+			completeTodo()
+		} else if input == "getTodoList" {
+			fmt.Println(todoList)
+		} else {
+			addTodo(input)
 		}
 
-		if input == "todos" {
-			fmt.Println(todoList)
-		} else if input == "complete" {
-			fmt.Println("Which task you want to complete")
-			for {
-				taskId, _ := reader.ReadString('\n')
-				taskId = strings.TrimSpace(taskId)
-				if taskId != "" {
+	}
+}
 
-					break
-				}
-			}
+func addTodo(name string) {
+	todo := Todo{
+		id:   len(todoList) + 1,
+		name: name,
+		done: false,
+	}
+
+	todoList = append(todoList, todo)
+}
+
+func completeTodo() {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Printf("Which task you want to complete %v? Enter task id", todoList)
+
+	for {
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+		taskId, err := strconv.Atoi(input)
+
+		if err != nil {
+			fmt.Println("Invalid type id")
+		}
+
+		foundTodoIndex := findIndex(todoList, taskId)
+
+		if foundTodoIndex != -1 {
+			completedTodo := todoList[foundTodoIndex]
+			completedTodo.done = true
+
+			todoList[foundTodoIndex] = completedTodo
+			break
 		} else {
-			todoList = todoList.Push(todo)
-
+			fmt.Printf("Task not found with %v", taskId)
 		}
 	}
 
+	fmt.Println("Success, Task completed")
+}
+
+func exitTerminal() {
+	fmt.Println("Goodbye....")
 }
