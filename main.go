@@ -30,6 +30,17 @@ func findIndex(list []Todo, id int) int {
 	return -1
 }
 
+func filter(cb func(Todo) bool) []Todo {
+	filteredList := []Todo{}
+	for i := range todoList {
+		if cb(todoList[i]) {
+			filteredList = append(filteredList, todoList[i])
+		}
+	}
+
+	return filteredList
+}
+
 func initTodo() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Add new todo")
@@ -47,6 +58,8 @@ func initTodo() {
 			completeTodo()
 		} else if input == "getTodoList" {
 			fmt.Println(todoList)
+		} else if input == "delete" {
+			deleteTodo()
 		} else {
 			addTodo(input)
 		}
@@ -62,6 +75,33 @@ func addTodo(name string) {
 	}
 
 	todoList = append(todoList, todo)
+}
+
+func deleteTodo() {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("Which task you want to delete %v? Enter task id", todoList)
+
+	for {
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+
+		taskId, err := strconv.Atoi(input)
+
+		if err != nil {
+			fmt.Println("Invalid type id")
+		}
+
+		foundTaskId := findIndex(todoList, taskId)
+
+		if foundTaskId != -1 {
+			todoList = filter(func(todo Todo) bool {
+				return todo.id != todoList[foundTaskId].id
+			})
+			break
+		}
+	}
+
+	fmt.Println(todoList)
 }
 
 func completeTodo() {
