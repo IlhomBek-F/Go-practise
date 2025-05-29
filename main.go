@@ -17,7 +17,14 @@ type Todo struct {
 var todoList = []Todo{}
 
 func main() {
-	initTodo()
+	// initTodo();
+	userId := Todo{id: 1, name: "John", done: false}
+
+	fmt.Println(userId.getTodoList())
+}
+
+func (e Todo) getTodoList() int {
+	return e.id
 }
 
 func findIndex(list []Todo, id int) int {
