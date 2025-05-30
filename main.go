@@ -18,9 +18,8 @@ var todoList = []Todo{}
 
 func main() {
 	// initTodo();
-	userId := Todo{id: 1, name: "John", done: false}
-
-	fmt.Println(userId.getTodoList())
+	pointer()
+	// fmt.Println(userId.getTodoList())
 }
 
 func (e Todo) getTodoList() int {
