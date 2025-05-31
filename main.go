@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -24,6 +25,15 @@ type formatedTodo struct {
 var todoList = []Todo{}
 
 func main() {
+	data, err := getTodoList()
+	if err != nil {
+		fmt.Println("Error: While getting todos from file")
+	} else {
+		for i := range data {
+			todo := data[i]
+			todoList = append(todoList, Todo{id: todo.ID, name: todo.NAME, done: todo.DONE})
+		}
+	}
 	initTodo()
 }
 
@@ -71,7 +81,12 @@ func initTodo() {
 				fmt.Println(data)
 			}
 		} else if input == "delete" {
-			deleteTodo()
+			success, err := deleteTodo()
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println(success)
+			}
 		} else {
 			addTodo(input)
 		}
@@ -97,14 +112,17 @@ func getTodoList() ([]formatedTodo, error) {
 	return todos, nil
 }
 
-func addTodo(name string) error {
+func addTodo(name string) {
 	todo := Todo{
 		id:   len(todoList) + 1,
 		name: name,
 		done: false,
 	}
 	todoList = append(todoList, todo)
+	updateJsonFile()
+}
 
+func updateJsonFile() {
 	formatList := make([]formatedTodo, 0)
 
 	for i := range todoList {
@@ -115,43 +133,42 @@ func addTodo(name string) error {
 	data, err := json.MarshalIndent(formatList, "", " ")
 
 	if err != nil {
-		return err
+		fmt.Println("Error: While enconding todo to json")
+		return
 	}
 
 	err = os.WriteFile("todos.json", data, 0644)
 
 	if err != nil {
-		return err
+		fmt.Println("Error: While saving data to json")
 	}
-
-	return nil
 }
 
-func deleteTodo() {
+func deleteTodo() (string, error) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("Which task you want to delete %v? Enter task id", todoList)
 
-	for {
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
 
-		taskId, err := strconv.Atoi(input)
+	taskId, err := strconv.Atoi(input)
 
-		if err != nil {
-			fmt.Println("Invalid type id")
-		}
-
-		foundTaskId := findIndex(todoList, taskId)
-
-		if foundTaskId != -1 {
-			todoList = filter(func(todo Todo) bool {
-				return todo.id != todoList[foundTaskId].id
-			})
-			break
-		}
+	if err != nil {
+		fmt.Println("Invalid type id")
 	}
 
-	fmt.Println(todoList)
+	foundTaskId := findIndex(todoList, taskId)
+
+	if foundTaskId != -1 {
+		todoList = filter(func(todo Todo) bool {
+			return todo.id != todoList[foundTaskId].id
+		})
+		updateJsonFile()
+	} else {
+		return "", errors.New("not todo found by id")
+	}
+
+	return "Todo deleted successfully", nil
 }
 
 func completeTodo() {
@@ -175,6 +192,7 @@ func completeTodo() {
 			completedTodo.done = true
 
 			todoList[foundTodoIndex] = completedTodo
+			updateJsonFile()
 			break
 		} else {
 			fmt.Printf("Task not found with %v", taskId)
