@@ -8,8 +8,8 @@ type Pointer struct {
 
 func pointer() {
 	var b = 5
-	var a *int
-	a = &b
+	var a *int = &b
 	*a = 90
+	b = 36
 	fmt.Println(*a, b)
 }

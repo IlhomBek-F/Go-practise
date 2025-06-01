@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -14,16 +15,16 @@ type Todo struct {
 	done bool
 }
 
+type formatedTodo struct {
+	ID   int
+	NAME string
+	DONE bool
+}
+
 var todoList = []Todo{}
 
 func main() {
-	// initTodo();
-	pointer()
-	// fmt.Println(userId.getTodoList())
-}
-
-func (e Todo) getTodoList() int {
-	return e.id
+	initTodo()
 }
 
 func findIndex(list []Todo, id int) int {
@@ -63,7 +64,12 @@ func initTodo() {
 		if input == "complete" {
 			completeTodo()
 		} else if input == "getTodoList" {
-			fmt.Println(todoList)
+			data, err := getTodoList()
+			if err != nil {
+				fmt.Println("Error, while fetching data from file")
+			} else {
+				fmt.Println(data)
+			}
 		} else if input == "delete" {
 			deleteTodo()
 		} else {
@@ -73,14 +79,52 @@ func initTodo() {
 	}
 }
 
-func addTodo(name string) {
+func getTodoList() ([]formatedTodo, error) {
+	data, err := os.ReadFile("todos.json")
+
+	if err != nil {
+		return nil, err
+	}
+
+	var todos = []formatedTodo{}
+
+	err = json.Unmarshal(data, &todos)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
+}
+
+func addTodo(name string) error {
 	todo := Todo{
 		id:   len(todoList) + 1,
 		name: name,
 		done: false,
 	}
-
 	todoList = append(todoList, todo)
+
+	formatList := make([]formatedTodo, 0)
+
+	for i := range todoList {
+		todo := todoList[i]
+		formatList = append(formatList, formatedTodo{ID: todo.id, NAME: todo.name, DONE: todo.done})
+	}
+
+	data, err := json.MarshalIndent(formatList, "", " ")
+
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile("todos.json", data, 0644)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func deleteTodo() {
