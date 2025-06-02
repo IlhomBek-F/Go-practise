@@ -1,17 +1,20 @@
-package main
+package storage
 
 import (
+	"GO/model"
 	"encoding/json"
 	"fmt"
 	"os"
 )
 
-func updateJsonFile() {
-	formatList := make([]formatedTodo, 0)
+var TodoList = []model.Todo{}
 
-	for i := range todoList {
-		todo := todoList[i]
-		formatList = append(formatList, formatedTodo{ID: todo.id, NAME: todo.name, DONE: todo.done})
+func UpdateJsonFile() {
+	formatList := make([]model.FormatedTodo, 0)
+
+	for i := range TodoList {
+		todo := TodoList[i]
+		formatList = append(formatList, model.FormatedTodo{ID: todo.Id, NAME: todo.Name, DONE: todo.Done})
 	}
 
 	data, err := json.MarshalIndent(formatList, "", " ")

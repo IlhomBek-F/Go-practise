@@ -1,36 +1,26 @@
 package main
 
 import (
+	"GO/model"
+	"GO/storage"
+	"GO/todos"
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
 )
 
-type Todo struct {
-	Id   int
-	Name string
-	Done bool
-}
-
-type formatedTodo struct {
-	ID   int
-	NAME string
-	DONE bool
-}
-
-var todoList = []Todo{}
-
 func main() {
-	data, err := getTodoList()
+	data, err := todos.GetTodoList()
 	if err != nil {
 		fmt.Println("Error: While getting todos from file")
 	} else {
 		for i := range data {
 			todo := data[i]
-			todoList = append(todoList, Todo{id: todo.ID, name: todo.NAME, done: todo.DONE})
+			storage.TodoList = append(storage.TodoList, model.Todo{Id: todo.ID, Name: todo.NAME, Done: todo.DONE})
 		}
 	}
+
 	initTodo()
 }
 
@@ -48,23 +38,23 @@ func initTodo() {
 		}
 
 		if input == "complete" {
-			completeTodo()
+			todos.CompleteTodo()
 		} else if input == "getTodoList" {
-			data, err := getTodoList()
+			data, err := todos.GetTodoList()
 			if err != nil {
 				fmt.Println("Error, while fetching data from file")
 			} else {
 				fmt.Println(data)
 			}
 		} else if input == "delete" {
-			success, err := deleteTodo()
+			success, err := todos.DeleteTodo()
 			if err != nil {
 				fmt.Println(err)
 			} else {
 				fmt.Println(success)
 			}
 		} else {
-			addTodo(input)
+			todos.AddTodo(input)
 		}
 
 	}
