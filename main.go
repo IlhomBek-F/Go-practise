@@ -5,12 +5,34 @@ import (
 	"GO/storage"
 	"GO/todos"
 	"bufio"
+	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+
+	_ "github.com/lib/pq"
 )
 
+type User struct {
+	Name   string
+	Age    int
+	Status bool
+}
+
 func main() {
+	db := connectToDB()
+	var id int
+
+	query := `INSERT INTO todos (name, completed) VALUES ($1, $2) RETURNING id`
+	err := db.QueryRow(query, "test item", false).Scan(&id)
+
+	if err != nil {
+		log.Fatal("Error inserting todo into database:", err)
+	}
+
+	fmt.Println("✔ Todo inserted successfully with ID:", id)
+
 	data, err := todos.GetTodoList()
 	if err != nil {
 		fmt.Println("Error: While getting todos from file")
@@ -22,6 +44,18 @@ func main() {
 	}
 
 	initTodo()
+}
+
+func connectToDB() *sql.DB {
+	connStr := "host=localhost port=5432 user=postgres password=1234 dbname=postgres sslmode=disable"
+
+	db, err := sql.Open("postgres", connStr)
+
+	if err != nil {
+		log.Fatal("Error connecting to the database:", err)
+	}
+
+	return db
 }
 
 func initTodo() {
