@@ -25,7 +25,8 @@ func main() {
 	var id int
 
 	query := `INSERT INTO todos (name, completed) VALUES ($1, $2) RETURNING id`
-	err := db.QueryRow(query, "test item", false).Scan(&id)
+
+	err := db.QueryRow(query, "test itemsssss", true).Scan(&id)
 
 	if err != nil {
 		log.Fatal("Error inserting todo into database:", err)
@@ -42,6 +43,29 @@ func main() {
 			storage.TodoList = append(storage.TodoList, model.Todo{Id: todo.ID, Name: todo.NAME, Done: todo.DONE})
 		}
 	}
+
+	all, err := db.Query("SELECT * FROM todos")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var (
+		idTodo    int
+		name      string
+		completed bool
+	)
+
+	for all.Next() {
+		err := all.Scan(&name, &completed, &idTodo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		storage.TodoList = append(storage.TodoList, model.Todo{Id: idTodo, Name: name, Done: completed})
+	}
+
+	fmt.Println(storage.TodoList)
 
 	initTodo()
 }
