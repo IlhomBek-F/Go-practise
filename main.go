@@ -67,7 +67,16 @@ func main() {
 
 	fmt.Println(storage.TodoList)
 
-	initTodo()
+	// initTodo()
+
+	var a int
+
+	for {
+		fmt.Println()
+		fmt.Scan(&a)
+
+		fmt.Print("Your scan", a)
+	}
 }
 
 func connectToDB() *sql.DB {

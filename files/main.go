@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -25,6 +26,11 @@ func main() {
 	defer file.Close()
 
 	readFile("example.txt")
+
+	getCmd := flag.NewFlagSet("get", flag.ExitOnError)
+	getAll := getCmd.Bool("all", false, "List all the books")
+
+	fmt.Println(getAll)
 }
 
 func readFile(filename string) {
